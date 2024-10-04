@@ -27,6 +27,9 @@ import java.lang.reflect.Method;
 import java.util.AbstractCollection;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.Arrays;
+import java.util.Comparator;
+import java.util.HashMap;
 
 public class InterfaceScanner {
     private final Class interfaceClass;
@@ -38,6 +41,22 @@ public class InterfaceScanner {
         this.interfaceClass = interfaceClass;
         this.typeMapper = typeMapper;
         this.methods = interfaceClass.getMethods();
+		
+		// make methods order deterministic
+        // calculate m2key lookup
+        HashMap<Method,String> m2key = new HashMap();
+        for (Method m : methods)
+        	m2key.put(m, m.toString());
+        // sort by string description (key)
+        Arrays.sort(methods,new Comparator<Method>() {
+            @Override
+            public int compare(Method o1, Method o2) {
+            	String key1 = m2key.get(o1);
+            	String key2 = m2key.get(o2);
+            	return key1.compareTo(key2);
+            }
+        });
+		
         this.callingConvention = interfaceClass.isAnnotationPresent(StdCall.class) ? CallingConvention.STDCALL : callingConvention; 
     }
 
